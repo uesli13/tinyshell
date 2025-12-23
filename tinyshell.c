@@ -19,6 +19,26 @@ typedef struct {
     char *error_file;     // Filename for '2>'
 } Command;
 
+// Helper to remove surrounding quotes from a string
+void strip_quotes(char *str) {
+    if (!str) return;
+    
+    int len = strlen(str);
+    if (len < 2) return; // Too short to have quotes
+
+    // Check for double quotes "..." or single quotes '...'
+    if ((str[0] == '"' && str[len-1] == '"') || 
+        (str[0] == '\'' && str[len-1] == '\'')) {
+        
+        // Move memory: shift everything after the first quote to the left
+        // This overwrites the first quote
+        memmove(str, str + 1, len - 2);
+        
+        // Add null terminator to cut off the last quote
+        str[len - 2] = '\0';
+    }
+}
+
 // Parses a single command string into a Command struct
 void parse_command(char *input, Command *cmd) {
     int arg_idx = 0;
@@ -29,17 +49,17 @@ void parse_command(char *input, Command *cmd) {
     cmd->error_file = NULL;
     cmd->append_mode = 0;
     
-    char *token = strtok(input, " \t\n");
+    char *token = strtok(input, DELIMITERS);
     while (token != NULL && arg_idx < MAX_ARGS - 1) {
         
         // Input Redirection (<)
         if (strcmp(token, "<") == 0) {
-            token = strtok(NULL, " \t\n"); // Get the filename
+            token = strtok(NULL, DELIMITERS); // Get the filename
             if (token) cmd->input_file = token;
         }
         // Output Redirection (>)
         else if (strcmp(token, ">") == 0) {
-            token = strtok(NULL, " \t\n");
+            token = strtok(NULL, DELIMITERS);
             if (token) {
                 cmd->output_file = token;
                 cmd->append_mode = 0;
@@ -47,7 +67,7 @@ void parse_command(char *input, Command *cmd) {
         }
         // Append Redirection (>>)
         else if (strcmp(token, ">>") == 0) {
-            token = strtok(NULL, " \t\n");
+            token = strtok(NULL, DELIMITERS);
             if (token) {
                 cmd->output_file = token;
                 cmd->append_mode = 1;
@@ -55,15 +75,16 @@ void parse_command(char *input, Command *cmd) {
         }
         // Error Redirection (2>)
         else if (strcmp(token, "2>") == 0) {
-            token = strtok(NULL, " \t\n");
+            token = strtok(NULL, DELIMITERS);
             if (token) cmd->error_file = token;
         }
         // Regular Argument
         else {
+            strip_quotes(token);
             cmd->args[arg_idx++] = token;
         }
 
-        token = strtok(NULL, " \t\n");
+        token = strtok(NULL, DELIMITERS);
     }
     cmd->args[arg_idx] = NULL;
 
@@ -76,7 +97,13 @@ int parse_pipeline(char *line, Command *commands) {
     
     // Split by pipe '|'
     char *next_pipe = strchr(line_cursor, '|');
-    
+
+    //Debug line:
+    // printf("Debug: Parsing pipeline: %s\n", line);
+
+    //Debug next_pipe:
+    // printf("Debug: Next pipe at: %s\n", next_pipe ? next_pipe : "NULL");
+
     while (line_cursor != NULL && cmd_count < MAX_PIPES) {
         if (next_pipe != NULL) {
             *next_pipe = '\0'; // Replace '|' with null terminator
@@ -271,6 +298,25 @@ int main() {
 
         // 1. Parse
         int num_cmds = parse_pipeline(buffer, commands);
+
+
+        // Debug Number of commands parsed
+        // printf("Debug: Number of commands parsed: %d\n", num_cmds);
+
+        // Debug each command and its arguments
+        // for (int i = 0; i < num_cmds; i++) {
+        //     printf("Debug: Command %d:\n", i + 1);
+        //     for (int j = 0; commands[i].args[j] != NULL; j++) {
+        //         printf("  Arg %d: %s\n", j, commands[i].args[j]);
+        //     }
+        //     if (commands[i].input_file)
+        //         printf("  Input Redirection: %s\n", commands[i].input_file);
+        //     if (commands[i].output_file)
+        //         printf("  Output Redirection: %s (Append: %d)\n", commands[i].output_file, commands[i].append_mode);
+        //     if (commands[i].error_file)
+        //         printf("  Error Redirection: %s\n", commands[i].error_file);
+        // }
+
 
         // 2. Handle Empty Input
         if (num_cmds == 0) continue;
