@@ -1,43 +1,43 @@
+# TinyShell
+
+**TinyShell** is a lightweight, custom Unix shell implementation in C. It replicates core shell functionalities including command execution, I/O redirection, pipelines, and advanced job control, built using standard POSIX system calls.
+
 ## Project Overview
-TinyShell is a lightweight Unix shell implementation in C. It replicates core shell functionality—parsing user input, resolving paths, and executing commands—using standard POSIX system calls. 
+
+This project was developed as part of the "Operating Systems" course. It demonstrates a deep understanding of process management, signal handling, and system programming in Linux. The shell has been implemented in three phases, evolving from a simple command runner to a fully interactive shell with job control capabilities.
 
 ## Key Features
-* **REPL Interface:** Interactive prompt (`tinyshell>`) with advanced input parsing.
-* **Command Execution:** Uses `fork`, `execve`, and `waitpid` to run programs.
-* **Path Resolution:** Dynamically searches the `PATH` variable for executables.
-* **I/O Redirection:** Full support for file redirection operators:
-  * Input (`<`): Read from files.
-  * Output (`>`): Write to files (overwrite).
-  * Append (`>>`): Write to files (append).
-  * Error (`2>`): Redirect standard error.
-* **Pipelines:** Connects multiple commands using pipes (`|`) (e.g., `ls | grep .c`).
-* **Built-ins:** Supports `exit` and EOF (Ctrl+D) termination.
-* **Status Reporting:** Reports process exit codes upon completion.
 
-## File Structure
-* `tinyshell.c`: The main source code containing the shell logic, parsing, and execution engine.
-* `Makefile`: Automation script for compiling and cleaning the project.
-* `README.md`: Documentation and usage guide.
+### 1. Command Execution
+* Executes standard Unix commands (e.g., `ls`, `grep`, `sleep`).
+* Dynamically searches the `PATH` environment variable for executables.
+* Supports arguments and flags.
+
+### 2. I/O Redirection
+Full support for standard stream redirection:
+* **Input (`<`):** Read input from a file.
+* **Output (`>`):** Write output to a file (overwrite).
+* **Append (`>>`):** Append output to a file.
+* **Error (`2>`):** Redirect standard error to a file.
+
+### 3. Pipelines
+* Supports chaining multiple commands using pipes (`|`).
+* Example: `cat file.txt | grep "search" | sort`
+
+### 4. Job Control (Phase 3)
+* **Background Execution (`&`):** Run commands in the background without blocking the shell.
+* **Process Groups:** Isolates jobs in their own process groups for proper signal handling.
+* **Signal Handling:**
+    * `Ctrl-C` (SIGINT): Interrupts the foreground job only.
+    * `Ctrl-Z` (SIGTSTP): Stops (pauses) the foreground job.
+* **Job Management Commands:**
+    * `jobs`: Lists all active (running or stopped) jobs.
+    * `fg %N`: Brings job N to the foreground.
+    * `bg %N`: Resumes stopped job N in the background.
 
 ## Build Instructions
 
-1.  **Build the project:**
-    ```bash
-    make
-    ```
-
-2.  **Clean up object files:**
-    ```bash
-    make clean
-    ```
-
-3.  **Remove all binaries and build files:**
-    ```bash
-    make purge
-    ```
-
-## Usage
-Start the shell by running the executable:
+To compile the project, run the following command in the terminal:
 
 ```bash
-./tinyshell
+make

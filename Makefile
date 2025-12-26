@@ -1,35 +1,21 @@
-SHELL := /bin/bash
-
-# ==================================================
-# COMMANDS
-
 CC = gcc
-CFLAGS = -Wall -Wextra -g 
-RM = rm -f
-TARGET = tinyshell
+CFLAGS = -Wall -g
+OBJ = main.o parser.o executor.o jobs.o
 
-# ==================================================
-# TARGETS
+tinyshell: $(OBJ)
+	$(CC) $(CFLAGS) -o tinyshell $(OBJ)
 
-all: $(TARGET) ## build the executable
+main.o: main.c tinyshell.h parser.h executor.h jobs.h
+	$(CC) $(CFLAGS) -c main.c
 
-# final link for executable
-$(TARGET): tinyshell.o
-	$(CC) $(CFLAGS) $^ -o $@
+parser.o: parser.c parser.h tinyshell.h
+	$(CC) $(CFLAGS) -c parser.c
 
-# generate objects
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+executor.o: executor.c executor.h tinyshell.h jobs.h
+	$(CC) $(CFLAGS) -c executor.c
 
-# clean temporary files
-clean:		## remove object files and backups
-	$(RM) *.o *~
+jobs.o: jobs.c jobs.h tinyshell.h
+	$(CC) $(CFLAGS) -c jobs.c
 
-# remove executable
-purge: clean ## remove object files, backups and the executable
-	$(RM) $(TARGET)
-
-# -------------------- Makefile help
-
-help:                           ## Print help for Makefile list
-	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^# --------------------)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}{printf "\033[32m %-35s\033[0m %s\n", $$1, $$2}' | sed -e 's/\[32m # --------------------/[33m===============/'
+clean:
+	rm -f *.o tinyshell
